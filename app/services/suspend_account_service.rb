@@ -5,6 +5,7 @@ class SuspendAccountService < BaseService
     @account = account
 
     suspend!
+    distribute_update_actor!
     unmerge_from_home_timelines!
     unmerge_from_list_timelines!
     privatize_media_attachments!
@@ -14,6 +15,10 @@ class SuspendAccountService < BaseService
 
   def suspend!
     @account.suspend! unless @account.suspended?
+  end
+
+  def distribute_update_actor!
+    ActivityPub::UpdateDistributionWorker.perform_async(@account.id) if @account.local?
   end
 
   def unmerge_from_home_timelines!

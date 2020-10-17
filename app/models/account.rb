@@ -50,6 +50,7 @@
 #  avatar_storage_schema_version :integer
 #  header_storage_schema_version :integer
 #  devices_url                   :string
+#  suspension_origin             :integer
 #
 
 class Account < ApplicationRecord
@@ -72,6 +73,7 @@ class Account < ApplicationRecord
   }.freeze
 
   enum protocol: [:ostatus, :activitypub]
+  enum suspension_origin: [:local, :remote], _prefix: true
 
   validates :username, presence: true
   validates_with UniqueUsernameValidator, if: -> { will_save_change_to_username? }
@@ -220,17 +222,25 @@ class Account < ApplicationRecord
     suspended_at.present?
   end
 
-  def suspend!(date = Time.now.utc)
+  def suspended_permanently?
+    suspended? && deletion_request.nil?
+  end
+
+  def suspended_temporarily?
+    suspended? && deletion_request.present?
+  end
+
+  def suspend!(date: Time.now.utc, origin: :local)
     transaction do
       create_deletion_request!
-      update!(suspended_at: date)
+      update!(suspended_at: date, suspension_origin: origin)
     end
   end
 
   def unsuspend!
     transaction do
       deletion_request&.destroy!
-      update!(suspended_at: nil)
+      update!(suspended_at: nil, suspension_origin: nil)
     end
   end
 
