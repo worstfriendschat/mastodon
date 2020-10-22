@@ -131,6 +131,15 @@ export const expandHashtagTimeline         = (hashtag, { maxId, tags, local } = 
     local:  local,
   }, done);
 };
+export const expandWfcHashtagTimeline      = (hashtag, { maxId, tags, local } = {}, done = noOp) => {
+  return expandTimeline(`hashtag:${hashtag}${local ? ':local' : ''}`, `/api/v1/timelines/tag/${hashtag}`, {
+    max_id: maxId,
+    any:    parseTags(tags, 'any'),
+    all:    parseTags(tags, 'all'),
+    none:   parseTags(tags, 'none'),
+    local:  local,
+  }, done);
+};
 
 export function expandTimelineRequest(timeline, isLoadingMore) {
   return {

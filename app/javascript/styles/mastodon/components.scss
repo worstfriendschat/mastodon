@@ -703,8 +703,17 @@
     justify-content: flex-end;
     min-width: 0;
     flex: 0 0 auto;
-
+    font-size: 6px;
     .compose-form__publish-button-wrapper {
+      overflow: hidden;
+      padding-top: 10px;
+
+    }
+    .compose-form__tagpublish-button-wrapper {
+      overflow: hidden;
+      padding-top: 10px;
+    }
+    .compose-form__sitakepublish-button-wrapper {
       overflow: hidden;
       padding-top: 10px;
     }

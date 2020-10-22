@@ -27,7 +27,9 @@ const messages = defineMessages({
   placeholder: { id: 'compose_form.placeholder', defaultMessage: 'What is on your mind?' },
   spoiler_placeholder: { id: 'compose_form.spoiler_placeholder', defaultMessage: 'Write your warning here' },
   publish: { id: 'compose_form.publish', defaultMessage: 'Toot' },
+  tagpublish: { id: 'compose_form.tagpublish', defaultMessage: '#Toot' },
   publishLoud: { id: 'compose_form.publish_loud', defaultMessage: '{publish}!' },
+  tagpublishLoud: { id: 'compose_form.tagpublish_loud', defaultMessage: '{publish}!' },
 });
 
 export default @injectIntl
@@ -88,10 +90,33 @@ class ComposeForm extends ImmutablePureComponent {
     const { isSubmitting, isChangingUpload, isUploading, anyMedia } = this.props;
     const fulltext = [this.props.spoilerText, countableText(this.props.text)].join('');
 
-    if (isSubmitting || isUploading || isChangingUpload || length(fulltext) > 500 || (fulltext.length !== 0 && fulltext.trim().length === 0 && !anyMedia)) {
+    if (isSubmitting || isUploading || isChangingUpload || length(fulltext) > 480 || (fulltext.length !== 0 && fulltext.trim().length === 0 && !anyMedia)) {
       return;
     }
 
+    this.props.onSubmit(this.context.router ? this.context.router.history : null);
+  }
+
+  handleTagSubmit = () => {
+    if (this.props.text !== this.autosuggestTextarea.textarea.value) {
+      // Something changed the text inside the textarea (e.g. browser extensions like Grammarly)
+      // Update the state to match the current text
+      this.props.onChange(this.autosuggestTextarea.textarea.value);
+    }
+
+    // Submit disabled:
+    const { isSubmitting, isChangingUpload, isUploading, anyMedia } = this.props;
+    const fulltext = [this.props.spoilerText, countableText(this.props.text)].join('');
+
+    if (isSubmitting || isUploading || isChangingUpload || length(fulltext) > 480 || (fulltext.length !== 0 && fulltext.trim().length === 0 && !anyMedia)) {
+      return;
+    }
+    this.props.onChange(this.autosuggestTextarea.textarea.value+'\n#worstfriendschat');
+    this.props.onSubmit(this.context.router ? this.context.router.history : null);
+  }
+
+  handleSitakeSubmit = () => {
+    this.props.onChange('しいたけ');
     this.props.onSubmit(this.context.router ? this.context.router.history : null);
   }
 
@@ -183,11 +208,14 @@ class ComposeForm extends ImmutablePureComponent {
     const text     = [this.props.spoilerText, countableText(this.props.text)].join('');
     const disabledButton = disabled || this.props.isUploading || this.props.isChangingUpload || length(text) > 500 || (text.length !== 0 && text.trim().length === 0 && !anyMedia);
     let publishText = '';
+    let tagpublishText = '';
 
     if (this.props.privacy === 'private' || this.props.privacy === 'direct') {
       publishText = <span className='compose-form__publish-private'><Icon id='lock' /> {intl.formatMessage(messages.publish)}</span>;
+      tagpublishText = <span className='compose-form__publish-private'><Icon id='lock' /> {intl.formatMessage(messages.tagpublish)}</span>;
     } else {
       publishText = this.props.privacy !== 'unlisted' ? intl.formatMessage(messages.publishLoud, { publish: intl.formatMessage(messages.publish) }) : intl.formatMessage(messages.publish);
+      tagpublishText = this.props.privacy !== 'unlisted' ? intl.formatMessage(messages.tagpublishLoud, { publish: intl.formatMessage(messages.tagpublish) }) : intl.formatMessage(messages.tagpublish);
     }
 
     return (
@@ -243,11 +271,13 @@ class ComposeForm extends ImmutablePureComponent {
             <PrivacyDropdownContainer />
             <SpoilerButtonContainer />
           </div>
-          <div className='character-counter__wrapper'><CharacterCounter max={500} text={text} /></div>
+          <div className='character-counter__wrapper'><CharacterCounter max={480} text={text} /></div>
         </div>
 
         <div className='compose-form__publish'>
           <div className='compose-form__publish-button-wrapper'><Button text={publishText} onClick={this.handleSubmit} disabled={disabledButton} block /></div>
+          <div className='compose-form__tagpublish-button-wrapper'><Button text={tagpublishText} onClick={this.handleTagSubmit} disabled={disabledButton} block /></div>
+          <div className='compose-form__sitakepublish-button-wrapper'><Button text='しいたけ' onClick={this.handleSitakeSubmit} disabled={disabledButton} block /></div>
         </div>
       </div>
     );

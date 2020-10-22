@@ -10,13 +10,13 @@ import LoadingBarContainer from './containers/loading_bar_container';
 import ModalContainer from './containers/modal_container';
 import { isMobile } from '../../is_mobile';
 import { debounce } from 'lodash';
-import { uploadCompose, resetCompose, changeComposeSpoilerness } from '../../actions/compose';
+import { uploadCompose, resetCompose } from '../../actions/compose';
 import { expandHomeTimeline } from '../../actions/timelines';
 import { expandNotifications } from '../../actions/notifications';
 import { fetchFilters } from '../../actions/filters';
 import { clearHeight } from '../../actions/height_cache';
 import { focusApp, unfocusApp } from 'mastodon/actions/app';
-import { synchronouslySubmitMarkers } from 'mastodon/actions/markers';
+import { submitMarkers } from 'mastodon/actions/markers';
 import { WrappedSwitch, WrappedRoute } from './util/react_router_helpers';
 import UploadArea from './components/upload_area';
 import ColumnsAreaContainer from './containers/columns_area_container';
@@ -37,6 +37,7 @@ import {
   Favourites,
   DirectTimeline,
   HashtagTimeline,
+  WfcHashtagTimeline,
   Notifications,
   FollowRequests,
   GenericNotFound,
@@ -76,7 +77,6 @@ const keyMap = {
   new: 'n',
   search: 's',
   forceNew: 'option+n',
-  toggleComposeSpoilers: 'option+x',
   focusColumn: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
   reply: 'r',
   favourite: 'f',
@@ -101,7 +101,6 @@ const keyMap = {
   goToRequests: 'g r',
   toggleHidden: 'x',
   toggleSensitive: 'h',
-  openMedia: 'e',
 };
 
 class SwitchingColumnsArea extends React.PureComponent {
@@ -189,6 +188,7 @@ class SwitchingColumnsArea extends React.PureComponent {
           <WrappedRoute path='/timelines/public/local' exact component={CommunityTimeline} content={children} componentParams={{ shouldUpdateScroll: this.shouldUpdateScroll }} />
           <WrappedRoute path='/timelines/direct' component={DirectTimeline} content={children} componentParams={{ shouldUpdateScroll: this.shouldUpdateScroll }} />
           <WrappedRoute path='/timelines/tag/:id' component={HashtagTimeline} content={children} componentParams={{ shouldUpdateScroll: this.shouldUpdateScroll }} />
+          <WrappedRoute path='/timelines/wfctag/:id' component={HashtagTimeline} content={children} componentParams={{ shouldUpdateScroll: this.shouldUpdateScroll }} />
           <WrappedRoute path='/timelines/list/:id' component={ListTimeline} content={children} componentParams={{ shouldUpdateScroll: this.shouldUpdateScroll }} />
 
           <WrappedRoute path='/notifications' component={Notifications} content={children} componentParams={{ shouldUpdateScroll: this.shouldUpdateScroll }} />
@@ -252,10 +252,9 @@ class UI extends React.PureComponent {
   handleBeforeUnload = e => {
     const { intl, dispatch, isComposing, hasComposingText, hasMediaAttachments } = this.props;
 
-    dispatch(synchronouslySubmitMarkers());
+    dispatch(submitMarkers());
 
     if (isComposing && (hasComposingText || hasMediaAttachments)) {
-      e.preventDefault();
       // Setting returnValue to any string causes confirmation dialog.
       // Many browsers no longer display this text to users,
       // but we set user-friendly message for other browsers, e.g. Edge.
@@ -376,7 +375,7 @@ class UI extends React.PureComponent {
 
   componentDidMount () {
     this.hotkeys.__mousetrap__.stopCallback = (e, element) => {
-      return ['TEXTAREA', 'SELECT', 'INPUT'].includes(element.tagName) && !e.altKey;
+      return ['TEXTAREA', 'SELECT', 'INPUT'].includes(element.tagName);
     };
   }
 
@@ -419,11 +418,6 @@ class UI extends React.PureComponent {
   handleHotkeyForceNew = e => {
     this.handleHotkeyNew(e);
     this.props.dispatch(resetCompose());
-  }
-
-  handleHotkeyToggleComposeSpoilers = e => {
-    e.preventDefault();
-    this.props.dispatch(changeComposeSpoilerness());
   }
 
   handleHotkeyFocusColumn = e => {
@@ -521,7 +515,6 @@ class UI extends React.PureComponent {
       new: this.handleHotkeyNew,
       search: this.handleHotkeySearch,
       forceNew: this.handleHotkeyForceNew,
-      toggleComposeSpoilers: this.handleHotkeyToggleComposeSpoilers,
       focusColumn: this.handleHotkeyFocusColumn,
       back: this.handleHotkeyBack,
       goToHome: this.handleHotkeyGoToHome,
