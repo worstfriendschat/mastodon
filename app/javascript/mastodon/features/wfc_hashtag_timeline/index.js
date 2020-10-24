@@ -82,7 +82,7 @@ class WfcHashtagTimeline extends React.PureComponent {
     let none = (tags.none || []).map(tag => tag.value);
 
     [id, ...any].map(tag => {
-      this.disconnects.push(dispatch(connectHashtagStream(id, tag, local, status => {
+      this.disconnects.push(dispatch(connectWfcHashtagStream(id, tag, local, status => {
         let tags = status.tags.map(tag => tag.name);
 
         return all.filter(tag => tags.includes(tag)).length === all.length &&
