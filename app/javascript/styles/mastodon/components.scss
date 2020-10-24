@@ -50,7 +50,7 @@
   cursor: pointer;
   display: inline-block;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 500;
   height: 36px;
   letter-spacing: 0;
@@ -703,19 +703,17 @@
     justify-content: flex-end;
     min-width: 0;
     flex: 0 0 auto;
-    font-size: 6px;
+    padding-top: 10px;
     .compose-form__publish-button-wrapper {
-      overflow: hidden;
-      padding-top: 10px;
-
+      overflow: unset;
     }
     .compose-form__tagpublish-button-wrapper {
-      overflow: hidden;
-      padding-top: 10px;
+      overflow: unset;
+      margin-left: 2px;
     }
     .compose-form__sitakepublish-button-wrapper {
-      overflow: hidden;
-      padding-top: 10px;
+      overflow: unset;
+      margin-left: 4px;
     }
   }
 }
@@ -5506,7 +5504,7 @@ a.status-card.compact:hover {
     flex: 0 1 auto;
     min-width: 30px;
     align-items: center;
-    font-size: 16px;
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
